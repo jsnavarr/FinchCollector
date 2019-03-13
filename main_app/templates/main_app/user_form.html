@@ -1,0 +1,86 @@
+{% extends 'base.html' %}
+{% block content %}
+{% if object %}
+    <h1>Edit <span class="teal-text">{{object.name}}</span></h1>
+{% else %}
+    <h1>Add User</h1>
+{% endif %}
+
+<form action="" method="POST">
+    {% csrf_token %}
+    <table class="striped">
+        <thead>
+            <!-- <tr><th>Date</th><th>Meal</th></tr> -->
+        </thead>
+        <tbody>
+            <tr>
+                <td>Role</td>
+                <td><select id="user_role">
+                    <option value="Admin"
+                        {% if object.role == 'Admin' %}
+                            selected="true"
+                        {% endif %}
+                        >Admin</option>
+                    <option value="FoodGiver"
+                        {% if object.role == 'FoodGiver' %}
+                            selected="true"
+                        {% endif %}
+                    >Food Giver</option>
+                    <option value="FoodTaker"
+                    {% if object.role == 'FoodTaker' %}
+                        selected="true"
+                    {% endif %}
+                    >Food Taker</option>
+                </select></td>
+            </tr>
+            <tr>
+                <td>Name</td>
+                <td><input type="text" 
+                    {% if object %}
+                        value = "{{ user.name }}"
+                    {% endif %}
+                    ></input>
+                </td>
+            </tr>
+            <tr>
+                <td>e-mail</td>
+                <td><input type="text" 
+                    {% if object %}
+                        value = "{{ user.email }}"
+                    {% endif %}
+                    ></input>
+                </td>
+            </tr>
+            <tr>
+                <td>Logo</td>
+                <td><input type="text" 
+                    {% if object %}
+                        value = "{{ user.logo }}"
+                    {% endif %}
+                    ></input>
+                </td>
+            </tr>
+            <tr>
+                <td>Website</td>
+                <td><input type="text" 
+                    {% if object %}
+                        value = "{{ user.website }}"
+                    {% endif %}
+                    ></input>
+                </td>
+            </tr>
+        </tbody>
+        </table>
+        <input type="submit" value="Submit!" class="btn">
+</form>
+<script>
+    // var El = document.getElementById('user_role');
+    // var ROLES = ['FoodGiver', 'FoodTaker', 'Admin'];
+    // if (object) {
+    //     var i = ROLES.indexof(object.role);
+    //     if (i!= -1){
+    //         document.getElementById('user_role').options[i].selected = true;
+    //     }
+    // }
+</script>
+{% endblock %}
