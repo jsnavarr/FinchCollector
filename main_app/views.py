@@ -1,10 +1,13 @@
 from django.shortcuts import render, redirect
 from django.views.generic.edit import CreateView, UpdateView, DeleteView
 from django.views.generic import ListView, DetailView 
-from .models import User, Phone, Meal
+import uuid
+import boto3
+from .models import User, Phone, Meal, Photo
 from .forms import PhoneForm
 
-# Create your views here.
+S3_BASE_URL = 'https://s3.us-east-1.amazonaws.com/'
+BUCKET = 'anycollector'
 
 def home(request):
   return render(request, 'home.html')
@@ -53,22 +56,14 @@ def add_phone(request, user_id):
   # validate the form
   if phone_form.is_valid():
     # don't save the form to the db until it
-    # has the cat_id assigned
+    # has the user_id assigned
     new_phone = phone_form.save(commit=False)
     new_phone.user_id = user_id
     new_phone.save()
   return redirect('detail', user_id=user_id)
 
 def remove_phone(request, user_id, phone_id):
-  # create the ModelForm using the data in request.POST
-#   phone_form = PhoneForm(request.POST)
-  # validate the form
-#   if phone_form.is_valid():
-    # don't save the form to the db until it
-    # has the cat_id assigned
-    # new_phone = phone_form.save(commit=False)
-    new_phone = Phone.objects.get(id = phone_id)
-    new_phone.remove()
+    Phone.objects.filter(id=phone_id).delete()
     return redirect('detail', user_id=user_id)
 
 class MealList(ListView):
@@ -98,3 +93,22 @@ def deassoc_meal(request, user_id, meal_id):
   # Note that you can pass a meal's id instead of the whole object
   User.objects.get(id=user_id).meals.remove(meal_id)
   return redirect('detail', user_id=user_id)
+
+def add_photo(request, user_id):
+	# photo-file was the "name" attribute on the <input type="file">
+    photo_file = request.FILES.get('photo-file', None)
+    if photo_file:
+        s3 = boto3.client('s3')
+        # need a unique "key" for S3 / needs image file extension too
+        key = uuid.uuid4().hex[:6] + photo_file.name[photo_file.name.rfind('.'):]
+        # just in case something goes wrong
+        try:
+            s3.upload_fileobj(photo_file, BUCKET, key)
+            # build the full url string
+            url = f"{S3_BASE_URL}{BUCKET}/{key}"
+            # we can assign to user_id or user (if you have a user object
+            photo = Photo(url=url, user_id=user_id)
+            photo.save()
+        except:
+            print('An error occurred uploading file to S3')
+    return redirect('detail', user_id=user_id)
