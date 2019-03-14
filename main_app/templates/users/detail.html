@@ -25,18 +25,75 @@
         {{ phone_form.as_p }}
         <input type="submit" class="btn" value="Add Phone">
       </form>
+      <br>
       <table class="striped">
         <thead>
           <tr><th>Number</th></tr>
         </thead>
         <tbody>
-          {% for phone in user.phone_set.all %}
+          {% for phone in phones %}
             <tr>
-              <td>{{phone.get_number_display}}</td>
+              <td>{{phone.number}}</td>
+              <td>
+              <form action="{% url 'remove_phone' user.id phone.id %}" method="post">
+                {% csrf_token %}
+                <input type="submit" class="btn-flat" value="Remove Phone Number">
+              </form>
+            </td>
             </tr>
           {% endfor %}
         </tbody>
       </table>
     </div>
 </div>
+<hr>
+<div class="row">
+  <div class="col s6">
+    <h3>{{ user.name }}'s Meals</h3>
+    {% if user.meals.count %}
+      {% for meal in user.meals.all %}
+        <div class="card">
+          <div class="card-content">
+            <span class="card-title">
+              A <span>{{ meal.description }}</span> {{ meal.available_on }}
+            </span>
+          </div>
+        </div>
+        <div class="card-action">
+          <form action="{% url 'deassoc_meal' user.id meal.id %}" method="post">
+            {% csrf_token %}
+            <button type="submit" class="btn">Delete</button>
+          </form>
+        </div>      
+      {% endfor %}
+    {% else %}
+      <h5>No Meals :(</h5>
+    {% endif %}
+  </div>
+  <!-- Available meals will come after this line -->
+  <div class="col s6">
+    <h3>Available Meals</h3>
+    {% if meals.count %}
+      {% for meal in meals.all %}
+        <div class="card">
+          <div class="card-content">
+            <span class="card-title">
+              <span>{{ meal.description }}</span> <br>
+              <span>Available on: {{ meal.available_on }}</span>
+            </span>
+          </div>
+          <div class="card-action">
+            <form action="{% url 'assoc_meal' user.id meal.id %}" method="post">
+              {% csrf_token %}
+              <button type="submit" class="btn">Add</button>
+            </form>
+          </div>
+        </div>
+      {% endfor %}
+    {% else %}
+      <h5>{{user.name}} Already Has All Meals Available</h5>
+    {% endif %}
+  </div>
+</div>
+
 {% endblock %}
